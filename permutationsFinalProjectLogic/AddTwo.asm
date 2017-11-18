@@ -1,6 +1,6 @@
 TITLE Add and Subtract,           (AddSub2.asm)
 ;Lily McKeirnan
-;permutation logic for final project
+;permutation logic for final project Enigma Assembler
 
 INCLUDE Irvine32.inc
 ;-----------------------------------------------------
