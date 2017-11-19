@@ -10,6 +10,11 @@ INCLUDE Irvine32.inc
 prompt1 BYTE "Enter a plainText: ",0
 ;prompt2 BYTE "Enter in a key size: ",0
 prompt3 BYTE "Enter in a key number value (using numbers 0-4 scrambled up): ",0
+prompt4 BYTE "Values were outside the range of 0-4 inclusive. Try again: ",0
+prompt5 BYTE "You repeated a value, try again: ",0
+prompt6 BYTE "Your Key: ",0
+prompt7 BYTE "Plaintext:  ",0
+prompt8 BYTE "Cipher Text: ",0
 
 ;plainTextArray BYTE "h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d", " ", "f", "o", "u", "r",0
 ;plainTextArray BYTE "hello world four",0
@@ -19,7 +24,7 @@ byteCount DWORD ?
 
 ;keyArray BYTE 3, 2, 1, 0,4
 
-keyArray BYTE 5 DUP(0)		;???????????????
+keyArray BYTE 5 DUP('#')		;???????????????
 
 cipherTextArray BYTE SIZEOF plainTextArray DUP(0)
 x BYTE ?							;variable we use in L3 and InnerLoop PROC
@@ -33,25 +38,67 @@ cipherTextString BYTE ?				;new array
 
 main PROC
 
-mov edx, OFFSET prompt1
+mov edx, OFFSET prompt1				;code for user inputing in plaintext 
 call WriteString
 mov edx, OFFSET plainTextArray
 mov ecx, SIZEOF plainTextArray
 call ReadString
 mov byteCount, eax
 
-mov ecx, 5
+mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
 mov esi, 0
 L2:
+	push esi
+	push ecx 
 	mov edx, OFFSET prompt3
 	call WriteString
-	call ReadInt
-	mov keyArray[esi], al
-	inc esi
+	Next:
+		call ReadInt
+		cmp eax, 4
+		ja OutOfRange
+		cmp eax, 0
+		jb OutOfRange
+	;-------------------loop comparing values entered with ones in the array----------------------
+	mov ecx, 5
+	mov esi, 0
+	L5:
+		cmp al, keyArray[esi]
+		je Repeats
+		inc esi
+	loop L5
+	jmp Done
+	;-------------------------------------------------
+
+	OutOfRange:
+		mov edx, OFFSET prompt4
+		call WriteString
+		jmp Next
+
+	Repeats:
+		mov edx, OFFSET prompt5
+		call WriteString
+		jmp Next
+	Done:
+		pop ecx
+		pop esi
+		mov keyArray[esi], al
+		inc esi
 loop L2
+;----------------------------------------------------------------------
+call Crlf
+mov edx, OFFSET prompt6
+call WriteString
 
-
-
+mov ecx, 5
+mov esi, 0
+L6:
+	mov edx, OFFSET keyArray			;displaying the final key
+	movzx eax, keyArray[esi]
+	call writeInt
+	inc esi
+loop L6
+call Crlf
+;--------------------------------------------
 
 
 
@@ -121,9 +168,13 @@ lend:
 ;loop L2
 ;----------------------------------------------------------------------
 	;display arrays
+	mov edx, OFFSET prompt7
+	call WriteString
 	mov edx, OFFSET plainTextArray
 	call Writestring
 	call Crlf
+	mov edx, OFFSET prompt8
+	call WriteString
 	mov edx, OffSET cipherTextArray
 	call Writestring
 	call Crlf
