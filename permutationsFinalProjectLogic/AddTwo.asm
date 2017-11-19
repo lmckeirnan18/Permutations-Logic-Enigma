@@ -48,6 +48,7 @@ mov byteCount, eax
 mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
 mov esi, 0
 L2:
+	
 	push esi
 	push ecx 
 	mov edx, OFFSET prompt3

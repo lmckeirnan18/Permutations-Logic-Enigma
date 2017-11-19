@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:14:41
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
 )Add and Subtract,           (AddSub2.asm		     Page 1 - 1
 
 
@@ -113,6 +113,7 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:14:41
  0000001E  B9 00000005		mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
  00000023  BE 00000000		mov esi, 0
  00000028			L2:
+					
  00000028  56				push esi
  00000029  51				push ecx 
  0000002A  BA 00000014 R		mov edx, OFFSET prompt3
@@ -284,7 +285,7 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:14:41
  000001BA			InnerLoop ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:14:41
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
 )Add and Subtract,           (AddSub2.asm		     Symbols 2 - 1
 
 
