@@ -1,3 +1,4 @@
 ﻿  Assembling AddTwo.asm...
-  Project.vcxproj -> E:\Senior\Assembler\PermutationsLogicEngima\permutationsFinalProjectLogic\Debug\Project.exe
-  Project.vcxproj -> E:\Senior\Assembler\PermutationsLogicEngima\permutationsFinalProjectLogic\Debug\Project.pdb (Full PDB)
+  LINK : C:\Users\lmckeirnan18\Desktop\PermutationsLogicEngima\permutationsFinalProjectLogic\Debug\Project.exe not found or not built by the last incremental link; performing full link
+  Project.vcxproj -> C:\Users\lmckeirnan18\Desktop\PermutationsLogicEngima\permutationsFinalProjectLogic\Debug\Project.exe
+  Project.vcxproj -> C:\Users\lmckeirnan18\Desktop\PermutationsLogicEngima\permutationsFinalProjectLogic\Debug\Project.pdb (Full PDB)

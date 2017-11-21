@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/21/17 12:49:08
 )Add and Subtract,           (AddSub2.asm		     Page 1 - 1
 
 
@@ -98,9 +98,9 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
 
 
 
-				;----------------------------------------------
  00000000			.code
 
+				;--------------MAIN PROC--------------------------------
  00000000			main PROC
 
  00000000  BA 00000000 R	mov edx, OFFSET prompt1				;code for user inputing in plaintext 
@@ -235,7 +235,6 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
 
  0000014C			lend:
 
-				;loop L2
 				;----------------------------------------------------------------------
 					;display arrays
  0000014C  BA 000000BC R		mov edx, OFFSET prompt7
@@ -254,6 +253,8 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
  0000017E  6A 00	   *	    push   +000000000h
  00000180  E8 00000000 E   *	    call   ExitProcess
  00000185			main ENDP
+
+				;----------------------------END MAIN---------------------------------------
 
  00000185			InnerLoop PROC
  00000185			L4:
@@ -285,7 +286,7 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
  000001BA			InnerLoop ENDP
 
 				END main
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/18/17 16:33:34
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/21/17 12:49:08
 )Add and Subtract,           (AddSub2.asm		     Symbols 2 - 1
 
 

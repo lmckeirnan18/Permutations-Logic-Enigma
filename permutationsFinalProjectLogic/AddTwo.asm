@@ -33,9 +33,9 @@ cipherTextString BYTE ?				;new array
 
 
 
-;----------------------------------------------
 .code
 
+;--------------MAIN PROC--------------------------------
 main PROC
 
 mov edx, OFFSET prompt1				;code for user inputing in plaintext 
@@ -166,7 +166,6 @@ movzx ebx, dx										;need to have 8 and 3 at same time
 
 lend:
 
-;loop L2
 ;----------------------------------------------------------------------
 	;display arrays
 	mov edx, OFFSET prompt7
@@ -179,10 +178,13 @@ lend:
 	mov edx, OffSET cipherTextArray
 	call Writestring
 	call Crlf
+	cal Crlf
 
 
 	exit
 main ENDP
+
+;----------------------------END MAIN---------------------------------------
 
 InnerLoop PROC
 L4:
