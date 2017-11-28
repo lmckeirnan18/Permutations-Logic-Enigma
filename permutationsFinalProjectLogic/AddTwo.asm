@@ -19,10 +19,10 @@ prompt8 BYTE "Cipher Text: ",0
 ;plainTextArray BYTE "h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d", " ", "f", "o", "u", "r",0
 ;plainTextArray BYTE "hello world four",0
 
-plainTextArray BYTE 100 DUP(0)
+plainTextArray BYTE 100 DUP(" "),0
 byteCount DWORD ?
 
-;keyArray BYTE 3, 2, 1, 0,4
+space BYTE " ",0
 
 keyArray BYTE 5 DUP('#')		;???????????????
 
@@ -44,6 +44,17 @@ mov edx, OFFSET plainTextArray
 mov ecx, SIZEOF plainTextArray
 call ReadString
 mov byteCount, eax
+
+mov esi, eax
+mov ecx, 2
+mov bl, space
+
+L10:
+	mov plainTextArray[esi], bl				;taking care of the two dots in the plaintext array when reading in user input
+	inc esi
+
+loop L10
+
 
 mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
 mov esi, 0
@@ -87,6 +98,8 @@ L2:
 loop L2
 ;----------------------------------------------------------------------
 call Crlf
+mov eax, yellow
+call SetTextColor
 mov edx, OFFSET prompt6
 call WriteString
 
@@ -168,17 +181,21 @@ lend:
 
 ;----------------------------------------------------------------------
 	;display arrays
+	mov eax, (cyan)
+	call SetTextColor
 	mov edx, OFFSET prompt7
 	call WriteString
 	mov edx, OFFSET plainTextArray
 	call Writestring
 	call Crlf
+	mov eax, (red)
+	call SetTextColor
 	mov edx, OFFSET prompt8
 	call WriteString
 	mov edx, OffSET cipherTextArray
 	call Writestring
 	call Crlf
-	cal Crlf
+	call Crlf
 
 
 	exit
