@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    12/02/17 12:01:49
 )Add and Subtract,           (AddSub2.asm		     Page 1 - 1
 
 
@@ -71,16 +71,15 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
 	   2C 20 74 72 79
 	   20 61 67 61 69
 	   6E 3A 20 00
- 000000D1 59 6F 75 72 20	prompt6 BYTE "Your Key: ",0
-	   4B 65 79 3A 20
+ 000000D1 4B 65 79 3A 20	prompt6 BYTE "Key: ",0
 	   00
- 000000DC 50 6C 61 69 6E	prompt7 BYTE "Plaintext:  ",0
+ 000000D7 50 6C 61 69 6E	prompt7 BYTE "Plaintext:  ",0
 	   74 65 78 74 3A
 	   20 20 00
- 000000E9 43 69 70 68 65	prompt8 BYTE "Cipher Text: ",0
-	   72 20 54 65 78
-	   74 3A 20 00
- 000000F7 45 6E 74 65 72	prompt9 BYTE "Enter in a key number value (using numbers 0-5 scrambled up): ",0
+ 000000E4 43 69 70 68 65	prompt8 BYTE "CipherText: ",0
+	   72 54 65 78 74
+	   3A 20 00
+ 000000F1 45 6E 74 65 72	prompt9 BYTE "Enter in a key number value (using numbers 0-5 scrambled up): ",0
 	   20 69 6E 20 61
 	   20 6B 65 79 20
 	   6E 75 6D 62 65
@@ -93,7 +92,7 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
 	   61 6D 62 6C 65
 	   64 20 75 70 29
 	   3A 20 00
- 00000136 56 61 6C 75 65	prompt10 BYTE "Values were outside the range of 0-5 inclusive. Try again: ",0
+ 00000130 56 61 6C 75 65	prompt10 BYTE "Values were outside the range of 0-5 inclusive. Try again: ",0
 	   73 20 77 65 72
 	   65 20 6F 75 74
 	   73 69 64 65 20
@@ -105,6 +104,9 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
 	   65 2E 20 54 72
 	   79 20 61 67 61
 	   69 6E 3A 20 00
+ 0000016C 50 6F 73 3A 20	prompt11 BYTE "Pos: ",0
+	   00
+
 
 				;plainTextArray BYTE "h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d", " ", "f", "o", "u", "r",0
 				;plainTextArray BYTE "hello world four",0
@@ -115,20 +117,28 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
  000001D7 00000000		byteCount DWORD ?
 
  000001DB 20 00			space BYTE " ",0
- 000001DD 00			ksize BYTE ?    ;for the different sizes of keyarrays
+ 000001DD 5B 00			lbracket BYTE "[",0
+ 000001DF 5D 00			rbracket BYTE "]",0
+ 000001E1 7B 00			lbrace BYTE "{",0
+ 000001E3 7D 00			rbrace BYTE "}",0
+ 000001E5 00			ksize BYTE ?    ;for the different sizes of keyarrays
+ 000001E6 00			holder BYTE ?			;used for displaying with "{}" when determining length and position
 
- 000001DE  00000005 [		keyarray5 BYTE 5 DUP('#')		
+ 000001E7  00000005 [		keyarray5 BYTE 5 DUP('#')		
 	    23
 	   ]
- 000001E3  00000006 [		keyarray6 BYTE 6 DUP('#')
+ 000001EC  00000006 [		keyarray6 BYTE 6 DUP('#')
 	    23
 	   ]
+ 000001F2 00 01 02 03 04	posarray5 BYTE 0, 1, 2, 3, 4
+ 000001F7 00 01 02 03 04	posarray6 BYTE 0, 1, 2, 3, 4, 5
+	   05
 
- 000001E9  00000065 [		cipherTextArray BYTE SIZEOF plainTextArray DUP(0)
+ 000001FD  00000065 [		cipherTextArray BYTE SIZEOF plainTextArray DUP(0)
 	    00
 	   ]
- 0000024E 00			x BYTE ?							;variable we use in L3 and innerloop5 PROC
- 0000024F 00			cipherTextString BYTE ?				;new array
+ 00000262 00			x BYTE ?							;variable we use in L3 and innerloop5 PROC
+ 00000263 00			cipherTextString BYTE ?				;new array
 
 
 
@@ -154,390 +164,479 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
  00000031  46				inc esi
 
  00000032  E2 F7		loop L10
-
+													
 				;--------------key size options---------------------
  00000034			Redo:
  00000034  BA 00000014 R		mov edx, OFFSET prompt2
  00000039  E8 00000000 E		call WriteString
  0000003E  E8 00000000 E		call ReadInt
- 00000043  A2 000001DD R		mov ksize, al
+ 00000043  A2 000001E5 R		mov ksize, al
  00000048  3C 05			cmp al, 5
  0000004A  72 E8			jb Redo
  0000004C  3C 06			cmp al, 6
  0000004E  77 E4			ja Redo
 
- 00000050  80 3D 000001DD R		cmp ksize, 5
+ 00000050  80 3D 000001E5 R		cmp ksize, 5
 	   05
  00000057  74 02			je k5
- 00000059  EB 07			jmp k6
+ 00000059  EB 0C			jmp k6
  0000005B			k5:
- 0000005B  E8 00000190			call KeySize5							;gets user input for a key of size five and checks it for validity
- 00000060  EB 05			jmp Lend								
- 00000062			k6:
- 00000062  E8 000001E9			call KeySize6
- 00000067			Lend:
+ 0000005B  E8 000002CC			call KeySize5				;gets user input for a key of size five and checks it for validity
+ 00000060  E8 0000019B			call DisplayKey5			;displays the key that the user entered					
+ 00000065  EB 0A			jmp Lend								
+ 00000067			k6:
+ 00000067  E8 00000320			call KeySize6				;gets user input for a key of size five and checks it for validity
+ 0000006C  E8 00000225			call DisplayKey6			;displays the key that the user entered
+ 00000071			Lend:
 				;----------------------------------------------------------------------
- 00000067  E8 00000145		call DisplayKey								;displays the key that the user entered
-				;-------------------------------------------
 
-				;-----------------------------------------
-
-				;need jumps here....
- 0000006C  80 3D 000001DD R	cmp ksize, 5
+ 00000071  80 3D 000001E5 R	cmp ksize, 5
 	   05
- 00000073  74 02		je m5
- 00000075  EB 0C		jmp m6
- 00000077			m5:
- 00000077  E8 0000010A		call First5									;mixing up the first 5 elements (keyarray5 size = 5)
- 0000007C  E8 000000A4		call Rest5									;mix up the remaining elements for keysize = 5
- 00000081  EB 0A		jmp mend
+ 00000078  74 02		je m5
+ 0000007A  EB 31		jmp m6
+ 0000007C			m5:
+ 0000007C  E8 00000154		call First5									;mixing up the first 5 elements (keyarray5 size = 5)
+ 00000081  E8 000000EE		call Rest5									;mix up the remaining elements for keysize = 5
+ 00000086  A1 000001D7 R	mov eax, bytecount							;dividen
+ 0000008B  B3 05		mov bl, SIZEOF keyarray5					;divisor
+ 0000008D  F6 F3		div bl										;dividing number of characters entered by size of key array (quotient in AL, remainder in AH)
+ 0000008F  B3 05		mov bl, SIZEOF keyarray5					;multiplies whats in al with whats in bl, AX contains product
+ 00000091  F6 E3		mul bl
+ 00000093  66| 83 C0 05		add ax, SIZEOF keyarray5
+ 00000097  8B F0		mov esi, eax
+ 00000099  8A 1D 000001E3 R	mov bl, rbrace
+ 0000009F  88 9E 00000172 R	mov plainTextArray[esi], bl					;moving "}" into the plaintext array (need to subtract the 2 spaces added)						
+ 000000A5  88 9E 000001FD R	mov cipherTextArray[esi], bl				;moving "}" into the ciphertext array (need to add 1 )
 
- 00000083			m6:
- 00000083  E8 00000072		call First6									;mixing up the first 5 elements (keyarray5 size = 6)
- 00000088  E8 0000000C		call Rest6									;mix up the remaining elements for keysize = 6
+
+				;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!add jump when remander = 0!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ 000000AB  EB 2F		jmp mend
+
+ 000000AD			m6:
+ 000000AD  E8 00000097		call First6									;mixing up the first 5 elements (keyarray5 size = 6)
+ 000000B2  E8 00000031		call Rest6									;mix up the remaining elements for keysize = 6
+ 000000B7  A1 000001D7 R	mov eax, bytecount							;dividen
+ 000000BC  B3 06		mov bl, SIZEOF keyarray6					;divisor
+ 000000BE  F6 F3		div bl										;dividing number of characters entered by size of key array (quotient in AL, remainder in AH)
+ 000000C0  B3 06		mov bl, SIZEOF keyarray6					;multiplies whats in al with whats in bl, AX contains product
+ 000000C2  F6 E3		mul bl
+ 000000C4  66| 83 C0 06		add ax, SIZEOF keyarray6
+ 000000C8  8B F0		mov esi, eax
+ 000000CA  8A 1D 000001E3 R	mov bl, rbrace
+ 000000D0  88 9E 00000172 R	mov plainTextArray[esi], bl					;moving "}" into the plaintext array (need to subtract the 2 spaces added)						
+ 000000D6  88 9E 000001FD R	mov cipherTextArray[esi], bl				;moving "}" into the ciphertext array (need to add 1 )
 
 
- 0000008D			mend: 
+
+ 000000DC			mend: 
 				;----------------------------------------------------------------------
 					
- 0000008D  E8 0000021E			call Display									;use the display procedure to display the arrays
+ 000000DC  E8 0000030B			call Display									;use the display procedure to display the arrays
 
 					exit
- 00000092  6A 00	   *	    push   +000000000h
- 00000094  E8 00000000 E   *	    call   ExitProcess
- 00000099			main ENDP
+ 000000E1  6A 00	   *	    push   +000000000h
+ 000000E3  E8 00000000 E   *	    call   ExitProcess
+ 000000E8			main ENDP
 
 				;********************************END MAIN*************************************************
 
 				;-------------------Rest of the elements keysize = 6--------------
- 00000099			Rest6 PROC
- 00000099  B9 0000005F			mov ecx, SIZEOF plainTextArray - SIZEOF keyarray6				;do this loop for the rest of the elements in plainTextArray (12-4=8)????? do we need this???
- 0000009E  BB 00000000			mov ebx, 0														;counter for moving along along in the array??
- 000000A3  B8 00000000			mov eax, 0
- 000000A8  BD 00000000			mov ebp, 0
- 000000AD  BA 00000000			mov edx, 0
+ 000000E8			Rest6 PROC
+ 000000E8  B9 0000005F			mov ecx, SIZEOF plainTextArray - SIZEOF keyarray6				;do this loop for the rest of the elements in plainTextArray (12-4=8)????? do we need this???
+ 000000ED  BB 00000000			mov ebx, 0														;counter for moving along along in the array??
+ 000000F2  B8 00000000			mov eax, 0
+ 000000F7  BD 00000000			mov ebp, 0
+ 000000FC  BA 00000000			mov edx, 0
 
- 000000B2  8A 85 00000178 R		mov al, plainTextArray[SIZEOF keyarray6 + ebp]					;get the letter from the plaintext
- 000000B8  0F B6 B3			movzx esi,keyarray6[ebx]											;get the position from the keyarray5
-	   000001E3 R
+ 00000101  8A 85 00000178 R		mov al, plainTextArray[SIZEOF keyarray6 + ebp]					;get the letter from the plaintext
+ 00000107  0F B6 B3			movzx esi,keyarray6[ebx]											;get the position from the keyarray5
+	   000001EC R
 
- 000000BF  83 FE 06			cmp esi, SIZEOF keyarray6										;deciding if we need to mod to be able to apply the key array position elements 
- 000000C2  72 0E			jb lcipherl						;????????????????
+ 0000010E  83 FE 06			cmp esi, SIZEOF keyarray6										;deciding if we need to mod to be able to apply the key array position elements 
+ 00000111  72 0E			jb lcipherl						;
 
- 000000C4  BF 00000006			mov edi, SIZEOF keyarray6
- 000000C9  66| BA 0002			mov dx, 2
- 000000CD  66| F7 E2			mul dx
- 000000D0  03 F7			add esi,edi				;????????????????????
+ 00000113  BF 00000006			mov edi, SIZEOF keyarray6
+ 00000118  66| BA 0002			mov dx, 2
+ 0000011C  66| F7 E2			mul dx
+ 0000011F  03 F7			add esi,edi				;????????????????????
 
 
- 000000D2				lcipherl:				;this is a jump
- 000000D2  51					push ecx
- 000000D3  B9 0000000F				mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray6)/(SIZEOF keyarray6)
+ 00000121				lcipherl:				;this is a jump
+ 00000121  51					push ecx
+ 00000122  B9 0000000F				mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray6)/(SIZEOF keyarray6)
 
- 000000D8  C6 05 0000024E R			mov x, 1
+ 00000127  C6 05 00000262 R			mov x, 1
 	   01
- 000000DF					L14:
+ 0000012E					L14:
 					
- 000000DF  51					push ecx
- 000000E0  B9 00000006				mov ecx, SIZEOF keyarray6
+ 0000012E  51					push ecx
+ 0000012F  B9 00000006				mov ecx, SIZEOF keyarray6
 
- 000000E5  E8 00000247				Call innerloop6						;procedure defined below
+ 00000134  E8 00000348				Call innerloop6						;procedure defined below
 					
- 000000EA  59					pop ecx
- 000000EB  FE 05 0000024E R			inc x
- 000000F1  BB 00000000				mov ebx, 0
- 000000F6  E2 E7				loop L14
+ 00000139  59					pop ecx
+ 0000013A  FE 05 00000262 R			inc x
+ 00000140  BB 00000000				mov ebx, 0
+ 00000145  E2 E7				loop L14
 
 						;pop esi
- 000000F8  59					pop ecx
- 000000F9  C3			ret
- 000000FA			Rest6 ENDP
+ 00000147  59					pop ecx
+ 00000148  C3			ret
+ 00000149			Rest6 ENDP
 				;-------------Initial mix up of the plaintext for key of size 6 -------
- 000000FA			First6 PROC
- 000000FA  B9 00000006			mov ecx, SIZEOF keyarray6
- 000000FF  BE 00000000			mov esi, 0 
- 00000104  BB 00000000			mov ebx, 0
- 00000109  B8 00000000			mov eax, 0
- 0000010E				L13:
- 0000010E  8A 83 00000172 R			mov al, plainTextArray[ebx]			;putting first element in al
- 00000114  0F B6 B3				movzx esi, keyarray6[ebx]			;putting position to move the element into esi
-	   000001E3 R
- 0000011B  88 86 000001E9 R			mov cipherTextArray[esi],al			;putting element into the new position
- 00000121  43					inc ebx
- 00000122  E2 EA			loop L13
+ 00000149			First6 PROC
+ 00000149  B9 00000006			mov ecx, SIZEOF keyarray6
+ 0000014E  BE 00000000			mov esi, 0 
+ 00000153  BB 00000000			mov ebx, 0
+ 00000158  B8 00000000			mov eax, 0
+ 0000015D				L13:
+ 0000015D  8A 83 00000172 R			mov al, plainTextArray[ebx]			;putting first element in al
+ 00000163  0F B6 B3				movzx esi, keyarray6[ebx]			;putting position to move the element into esi
+	   000001EC R
+ 0000016A  88 86 000001FD R			mov cipherTextArray[esi],al			;putting element into the new position
+ 00000170  43					inc ebx
+ 00000171  E2 EA			loop L13
 
- 00000124  C3			ret
- 00000125			First6 ENDP
+ 00000173  C3			ret
+ 00000174			First6 ENDP
 
 
 				;---------------END of first size 6 mix up--------
 
 				;-------------------Rest of the elements keysize = 5--------------
- 00000125			Rest5 PROC
- 00000125  B9 00000060			mov ecx, SIZEOF plainTextArray - SIZEOF keyarray5				;do this loop for the rest of the elements in plainTextArray (12-4=8)????? do we need this???
- 0000012A  BB 00000000			mov ebx, 0														;counter for moving along along in the array??
- 0000012F  B8 00000000			mov eax, 0
- 00000134  BD 00000000			mov ebp, 0
- 00000139  BA 00000000			mov edx, 0
+ 00000174			Rest5 PROC
+ 00000174  B9 00000060			mov ecx, SIZEOF plainTextArray - SIZEOF keyarray5				;do this loop for the rest of the elements in plainTextArray (12-4=8)????? do we need this???
+ 00000179  BB 00000000			mov ebx, 0														;counter for moving along along in the array??
+ 0000017E  B8 00000000			mov eax, 0
+ 00000183  BD 00000000			mov ebp, 0
+ 00000188  BA 00000000			mov edx, 0
 
- 0000013E  8A 85 00000177 R		mov al, plainTextArray[SIZEOF keyarray5 + ebp]					;get the letter from the plaintext
- 00000144  0F B6 B3			movzx esi,keyarray5[ebx]											;get the position from the keyarray5
-	   000001DE R
+ 0000018D  8A 85 00000177 R		mov al, plainTextArray[SIZEOF keyarray5 + ebp]					;get the letter from the plaintext
+ 00000193  0F B6 B3			movzx esi,keyarray5[ebx]											;get the position from the keyarray5
+	   000001E7 R
 
- 0000014B  83 FE 05			cmp esi, SIZEOF keyarray5										;deciding if we need to mod to be able to apply the key array position elements 
- 0000014E  72 0E			jb lcipher						;????????????????
+ 0000019A  83 FE 05			cmp esi, SIZEOF keyarray5										;deciding if we need to mod to be able to apply the key array position elements 
+ 0000019D  72 0E			jb lcipher						;????????????????
 
- 00000150  BF 00000005			mov edi, SIZEOF keyarray5
- 00000155  66| BA 0002			mov dx, 2
- 00000159  66| F7 E2			mul dx
- 0000015C  03 F7			add esi,edi				;????????????????????
+ 0000019F  BF 00000005			mov edi, SIZEOF keyarray5
+ 000001A4  66| BA 0002			mov dx, 2
+ 000001A8  66| F7 E2			mul dx
+ 000001AB  03 F7			add esi,edi				;????????????????????
 
 
- 0000015E				lcipher:				;this is a jump
- 0000015E  51					push ecx
- 0000015F  B9 00000013				mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray5)/(SIZEOF keyarray5)
+ 000001AD				lcipher:				;this is a jump
+ 000001AD  51					push ecx
+ 000001AE  B9 00000013				mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray5)/(SIZEOF keyarray5)			;loop counter 
 
- 00000164  C6 05 0000024E R			mov x, 1
+ 000001B3  C6 05 00000262 R			mov x, 1
 	   01
- 0000016B					L3:
+ 000001BA					L3:
 					
- 0000016B  51					push ecx
- 0000016C  B9 00000005				mov ecx, SIZEOF keyarray5
+ 000001BA  51					push ecx
+ 000001BB  B9 00000005				mov ecx, SIZEOF keyarray5
 
- 00000171  E8 00000186					Call innerloop5						;procedure defined below
+ 000001C0  E8 00000287					Call innerloop5						;procedure defined below
 					
- 00000176  59					pop ecx
- 00000177  FE 05 0000024E R			inc x
- 0000017D  BB 00000000				mov ebx, 0
- 00000182  E2 E7				loop L3
+ 000001C5  59					pop ecx
+ 000001C6  FE 05 00000262 R			inc x
+ 000001CC  BB 00000000				mov ebx, 0
+ 000001D1  E2 E7				loop L3
 
 						;pop esi
- 00000184  59					pop ecx
- 00000185  C3			ret
- 00000186			Rest5 ENDP
+ 000001D3  59					pop ecx
+ 000001D4  C3			ret
+ 000001D5			Rest5 ENDP
 
 
 				;-------------Initial mix up of the plaintext for key of size 5 -------
- 00000186			First5 PROC
- 00000186  B9 00000005			mov ecx, SIZEOF keyarray5
- 0000018B  BE 00000000			mov esi, 0 
- 00000190  BB 00000000			mov ebx, 0
- 00000195  B8 00000000			mov eax, 0
- 0000019A				L1:
- 0000019A  8A 83 00000172 R			mov al, plainTextArray[ebx]			;putting first element in al
- 000001A0  0F B6 B3				movzx esi, keyarray5[ebx]			;putting position to move the element into esi
-	   000001DE R
- 000001A7  88 86 000001E9 R			mov cipherTextArray[esi],al			;putting element into the new position
- 000001AD  43					inc ebx
- 000001AE  E2 EA			loop L1
+ 000001D5			First5 PROC
+ 000001D5  B9 00000005			mov ecx, SIZEOF keyarray5
+ 000001DA  BE 00000000			mov esi, 0 
+ 000001DF  BB 00000000			mov ebx, 0
+ 000001E4  B8 00000000			mov eax, 0
+ 000001E9				L1:
+ 000001E9  8A 83 00000172 R			mov al, plainTextArray[ebx]			;putting first element in al
+ 000001EF  0F B6 B3				movzx esi, keyarray5[ebx]			;putting position to move the element into esi
+	   000001E7 R
+ 000001F6  88 86 000001FD R			mov cipherTextArray[esi],al			;putting element into the new position
+ 000001FC  43					inc ebx
+ 000001FD  E2 EA			loop L1
 
- 000001B0  C3			ret
- 000001B1			First5 ENDP
+ 000001FF  C3			ret
+ 00000200			First5 ENDP
 
 
 				;---------------END of first size 5 mix up--------
 
-				;--------------DISPLAY KEY PROCEDURE------------------------
- 000001B1			DisplayKey PROC
- 000001B1  E8 00000000 E		call Crlf
- 000001B6  B8 0000000E			mov eax, yellow
- 000001BB  E8 00000000 E		call SetTextColor
- 000001C0  BA 000000D1 R		mov edx, OFFSET prompt6
- 000001C5  E8 00000000 E		call WriteString
+				;--------------DISPLAY KEY PROCEDURE key size = 5------------------------
+ 00000200			DisplayKey5 PROC
+ 00000200  E8 00000000 E		call Crlf
+ 00000205  B8 0000000E			mov eax, yellow
+ 0000020A  E8 00000000 E		call SetTextColor
+ 0000020F  BA 0000016C R		mov edx, OFFSET prompt11
+ 00000214  E8 00000000 E		call WriteString
+ 00000219  BA 000001DD R		mov edx, OFFSET Lbracket
+ 0000021E  E8 00000000 E		call WriteString
+ 00000223  0F B6 0D			movzx ecx, ksize
+	   000001E5 R
+ 0000022A  BE 00000000			mov esi, 0
+ 0000022F				L17:
+ 0000022F  BA 000001F2 R			mov edx, OFFSET posarray5			;displaying the positions
+ 00000234  0F B6 86				movzx eax, posarray5[esi]
+	   000001F2 R
+ 0000023B  E8 00000000 E			call writeInt
+ 00000240  46					inc esi
+ 00000241  E2 EC			loop L17
+ 00000243  BA 000001DF R		mov edx, OFFSET Rbracket
+ 00000248  E8 00000000 E		call WriteString
+ 0000024D  E8 00000000 E		call Crlf
 
- 000001CA  0F B6 0D			movzx ecx, ksize
-	   000001DD R
- 000001D1  BE 00000000			mov esi, 0
- 000001D6				L6:
- 000001D6  BA 000001DE R			mov edx, OFFSET keyarray5			;displaying the final key
- 000001DB  0F B6 86				movzx eax, keyarray5[esi]
-	   000001DE R
- 000001E2  E8 00000000 E			call writeInt
- 000001E7  46					inc esi
- 000001E8  E2 EC			loop L6
- 000001EA  E8 00000000 E		call Crlf
+ 00000252  BA 000000D1 R		mov edx, OFFSET prompt6
+ 00000257  E8 00000000 E		call WriteString
+ 0000025C  BA 000001DD R		mov edx, OFFSET Lbracket
+ 00000261  E8 00000000 E		call WriteString
+ 00000266  0F B6 0D			movzx ecx, ksize
+	   000001E5 R
+ 0000026D  BE 00000000			mov esi, 0
+ 00000272				L6:
+ 00000272  BA 000001E7 R			mov edx, OFFSET keyarray5			;displaying the final key
+ 00000277  0F B6 86				movzx eax, keyarray5[esi]
+	   000001E7 R
+ 0000027E  E8 00000000 E			call writeInt
+ 00000283  46					inc esi
+ 00000284  E2 EC			loop L6
+ 00000286  BA 000001DF R		mov edx, OFFSET Rbracket
+ 0000028B  E8 00000000 E		call WriteString
+ 00000290  E8 00000000 E		call Crlf
 
- 000001EF  C3				ret
- 000001F0			DisplayKey ENDP
+ 00000295  C3				ret
+ 00000296			DisplayKey5 ENDP
 
+				;--------------DISPLAY KEY PROCEDURE key size = 6------------------------
+ 00000296			DisplayKey6 PROC
+ 00000296  E8 00000000 E		call Crlf
+ 0000029B  B8 0000000E			mov eax, yellow
+ 000002A0  E8 00000000 E		call SetTextColor
+ 000002A5  BA 0000016C R		mov edx, OFFSET prompt11
+ 000002AA  E8 00000000 E		call WriteString
+ 000002AF  BA 000001DD R		mov edx, OFFSET Lbracket
+ 000002B4  E8 00000000 E		call WriteString
+ 000002B9  0F B6 0D			movzx ecx, ksize
+	   000001E5 R
+ 000002C0  BE 00000000			mov esi, 0
+ 000002C5				L18:
+ 000002C5  BA 000001F7 R			mov edx, OFFSET posarray6			;displaying the positions
+ 000002CA  0F B6 86				movzx eax, posarray6[esi]
+	   000001F7 R
+ 000002D1  E8 00000000 E			call writeInt
+ 000002D6  46					inc esi
+ 000002D7  E2 EC			loop L18
+ 000002D9  BA 000001DF R		mov edx, OFFSET Rbracket
+ 000002DE  E8 00000000 E		call WriteString
+ 000002E3  E8 00000000 E		call Crlf
 
+ 000002E8  BA 000000D1 R		mov edx, OFFSET prompt6
+ 000002ED  E8 00000000 E		call WriteString
+ 000002F2  BA 000001DD R		mov edx, OFFSET Lbracket
+ 000002F7  E8 00000000 E		call WriteString
+ 000002FC  0F B6 0D			movzx ecx, ksize
+	   000001E5 R
+ 00000303  BE 00000000			mov esi, 0
+ 00000308				L16:
+ 00000308  BA 000001EC R			mov edx, OFFSET keyarray6			;displaying the final key
+ 0000030D  0F B6 86				movzx eax, keyarray6[esi]
+	   000001EC R
+ 00000314  E8 00000000 E			call writeInt
+ 00000319  46					inc esi
+ 0000031A  E2 EC			loop L16
+ 0000031C  BA 000001DF R		mov edx, OFFSET Rbracket
+ 00000321  E8 00000000 E		call WriteString
+ 00000326  E8 00000000 E		call Crlf
+
+ 0000032B  C3				ret
+ 0000032C			DisplayKey6 ENDP
 
 				;-----------------------------KEYSIZE 5 checking procedure------------------
- 000001F0			KeySize5 PROC
- 000001F0  B9 00000005			mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
- 000001F5  BE 00000000			mov esi, 0
- 000001FA				L2:
+ 0000032C			KeySize5 PROC
+ 0000032C  B9 00000005			mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
+ 00000331  BE 00000000			mov esi, 0
+ 00000336				L2:
 					
- 000001FA  56					push esi
- 000001FB  51					push ecx 
- 000001FC  BA 00000034 R			mov edx, OFFSET prompt3
- 00000201  E8 00000000 E			call WriteString
- 00000206					Next:
- 00000206  E8 00000000 E				call ReadInt
- 0000020B  83 F8 04					cmp eax, 4
- 0000020E  77 1C					ja OutOfRange
- 00000210  83 F8 00					cmp eax, 0
- 00000213  72 17					jb OutOfRange
+ 00000336  56					push esi
+ 00000337  51					push ecx 
+ 00000338  BA 00000034 R			mov edx, OFFSET prompt3
+ 0000033D  E8 00000000 E			call WriteString
+ 00000342					Next:
+ 00000342  E8 00000000 E				call ReadInt
+ 00000347  83 F8 04					cmp eax, 4
+ 0000034A  77 1C					ja OutOfRange
+ 0000034C  83 F8 00					cmp eax, 0
+ 0000034F  72 17					jb OutOfRange
 						;-------------------loop comparing values entered with ones in the array----------------------
- 00000215  B9 00000005				mov ecx, 5
- 0000021A  BE 00000000				mov esi, 0
- 0000021F					L5:
- 0000021F  3A 86 000001DE R				cmp al, keyarray5[esi]
- 00000225  74 11					je Repeats
- 00000227  46						inc esi
- 00000228  E2 F5				loop L5
- 0000022A  EB 18				jmp Done
+ 00000351  B9 00000005				mov ecx, 5
+ 00000356  BE 00000000				mov esi, 0
+ 0000035B					L5:
+ 0000035B  3A 86 000001E7 R				cmp al, keyarray5[esi]
+ 00000361  74 11					je Repeats
+ 00000363  46						inc esi
+ 00000364  E2 F5				loop L5
+ 00000366  EB 18				jmp Done
 						;-------------------------------------------------
 
- 0000022C					OutOfRange:
- 0000022C  BA 00000073 R				mov edx, OFFSET prompt4
- 00000231  E8 00000000 E				call WriteString
- 00000236  EB CE					jmp Next
+ 00000368					OutOfRange:
+ 00000368  BA 00000073 R				mov edx, OFFSET prompt4
+ 0000036D  E8 00000000 E				call WriteString
+ 00000372  EB CE					jmp Next
 
- 00000238					Repeats:
- 00000238  BA 000000AF R				mov edx, OFFSET prompt5
- 0000023D  E8 00000000 E				call WriteString
- 00000242  EB C2					jmp Next
- 00000244					Done:
- 00000244  59						pop ecx
- 00000245  5E						pop esi
- 00000246  88 86 000001DE R				mov keyarray5[esi], al
- 0000024C  46						inc esi
- 0000024D  E2 AB			loop L2
+ 00000374					Repeats:
+ 00000374  BA 000000AF R				mov edx, OFFSET prompt5
+ 00000379  E8 00000000 E				call WriteString
+ 0000037E  EB C2					jmp Next
+ 00000380					Done:
+ 00000380  59						pop ecx
+ 00000381  5E						pop esi
+ 00000382  88 86 000001E7 R				mov keyarray5[esi], al
+ 00000388  46						inc esi
+ 00000389  E2 AB			loop L2
 
- 0000024F  C3			ret
- 00000250			KeySize5 ENDP
+ 0000038B  C3			ret
+ 0000038C			KeySize5 ENDP
 
 
 				;--------------KEY6 checking procedure-----------------------
- 00000250			KeySize6 PROC
- 00000250  B9 00000006			mov ecx, 6							;code for user entering in key of size 5 (range 0-4)
- 00000255  BE 00000000			mov esi, 0
- 0000025A				L11:
+ 0000038C			KeySize6 PROC
+ 0000038C  B9 00000006			mov ecx, 6							;code for user entering in key of size 5 (range 0-4)
+ 00000391  BE 00000000			mov esi, 0
+ 00000396				L11:
 					
- 0000025A  56					push esi
- 0000025B  51					push ecx 
- 0000025C  BA 000000F7 R			mov edx, OFFSET prompt9
- 00000261  E8 00000000 E			call WriteString
- 00000266					Next:
- 00000266  E8 00000000 E				call ReadInt
- 0000026B  83 F8 05					cmp eax, 5
- 0000026E  77 1C					ja OutOfRange
- 00000270  83 F8 00					cmp eax, 0
- 00000273  72 17					jb OutOfRange
+ 00000396  56					push esi
+ 00000397  51					push ecx 
+ 00000398  BA 000000F1 R			mov edx, OFFSET prompt9
+ 0000039D  E8 00000000 E			call WriteString
+ 000003A2					Next:
+ 000003A2  E8 00000000 E				call ReadInt
+ 000003A7  83 F8 05					cmp eax, 5
+ 000003AA  77 1C					ja OutOfRange
+ 000003AC  83 F8 00					cmp eax, 0
+ 000003AF  72 17					jb OutOfRange
 						;-------------------loop comparing values entered with ones in the array----------------------
- 00000275  B9 00000006				mov ecx, 6
- 0000027A  BE 00000000				mov esi, 0
- 0000027F					L12:
- 0000027F  3A 86 000001DE R				cmp al, keyarray5[esi]
- 00000285  74 11					je Repeats
- 00000287  46						inc esi
- 00000288  E2 F5				loop L12
- 0000028A  EB 18				jmp Done
+ 000003B1  B9 00000006				mov ecx, 6
+ 000003B6  BE 00000000				mov esi, 0
+ 000003BB					L12:
+ 000003BB  3A 86 000001EC R				cmp al, keyarray6[esi]
+ 000003C1  74 11					je Repeats
+ 000003C3  46						inc esi
+ 000003C4  E2 F5				loop L12
+ 000003C6  EB 18				jmp Done
 						;-------------------------------------------------
 
- 0000028C					OutOfRange:
- 0000028C  BA 00000136 R				mov edx, OFFSET prompt10
- 00000291  E8 00000000 E				call WriteString
- 00000296  EB CE					jmp Next
+ 000003C8					OutOfRange:
+ 000003C8  BA 00000130 R				mov edx, OFFSET prompt10
+ 000003CD  E8 00000000 E				call WriteString
+ 000003D2  EB CE					jmp Next
 
- 00000298					Repeats:
- 00000298  BA 000000AF R				mov edx, OFFSET prompt5
- 0000029D  E8 00000000 E				call WriteString
- 000002A2  EB C2					jmp Next
- 000002A4					Done:
- 000002A4  59						pop ecx
- 000002A5  5E						pop esi
- 000002A6  88 86 000001DE R				mov keyarray5[esi], al
- 000002AC  46						inc esi
- 000002AD  E2 AB			loop L11
+ 000003D4					Repeats:
+ 000003D4  BA 000000AF R				mov edx, OFFSET prompt5
+ 000003D9  E8 00000000 E				call WriteString
+ 000003DE  EB C2					jmp Next
+ 000003E0					Done:
+ 000003E0  59						pop ecx
+ 000003E1  5E						pop esi
+ 000003E2  88 86 000001EC R				mov keyarray6[esi], al
+ 000003E8  46						inc esi
+ 000003E9  E2 AB			loop L11
 
- 000002AF  C3			ret
- 000002B0			KeySize6 ENDP
+ 000003EB  C3			ret
+ 000003EC			KeySize6 ENDP
 
 				;---------------Display procedure-------------------------
- 000002B0			Display PROC
+ 000003EC			Display PROC
 				;display arrays
- 000002B0  B8 00000003			mov eax, (cyan)
- 000002B5  E8 00000000 E		call SetTextColor
- 000002BA  BA 000000DC R		mov edx, OFFSET prompt7
- 000002BF  E8 00000000 E		call WriteString
- 000002C4  BA 00000172 R		mov edx, OFFSET plainTextArray
- 000002C9  E8 00000000 E		call Writestring
- 000002CE  E8 00000000 E		call Crlf
- 000002D3  B8 00000004			mov eax, (red)
- 000002D8  E8 00000000 E		call SetTextColor
- 000002DD  BA 000000E9 R		mov edx, OFFSET prompt8
- 000002E2  E8 00000000 E		call WriteString
- 000002E7  BA 000001E9 R		mov edx, OffSET cipherTextArray
- 000002EC  E8 00000000 E		call Writestring
- 000002F1  E8 00000000 E		call Crlf
- 000002F6  E8 00000000 E		call Crlf
- 000002FB  C3			ret
- 000002FC			Display ENDP
+ 000003EC  B8 00000003			mov eax, (cyan)
+ 000003F1  E8 00000000 E		call SetTextColor
+ 000003F6  BA 000000D7 R		mov edx, OFFSET prompt7
+ 000003FB  E8 00000000 E		call WriteString
+ 00000400  BA 000001E1 R		mov edx, OFFSET lbrace								;"{"
+ 00000405  E8 00000000 E		call WriteString
+ 0000040A  BA 00000172 R		mov edx, OFFSET plainTextArray
+ 0000040F  E8 00000000 E		call Writestring
+ 00000414  E8 00000000 E		call Crlf
+ 00000419  B8 00000004			mov eax, (red)
+ 0000041E  E8 00000000 E		call SetTextColor
+ 00000423  BA 000000E4 R		mov edx, OFFSET prompt8
+ 00000428  E8 00000000 E		call WriteString
+ 0000042D  BA 000001E1 R		mov edx, OFFSET lbrace								;"{"
+ 00000432  E8 00000000 E		call WriteString
+ 00000437  BA 000001FD R		mov edx, OffSET cipherTextArray
+ 0000043C  E8 00000000 E		call Writestring
+ 00000441  E8 00000000 E		call Crlf
+ 00000446  E8 00000000 E		call Crlf
+ 0000044B  C3			ret
+ 0000044C			Display ENDP
 
 				;-------------------------END DISPLAy PROCEDURE KeyArray Size = 5----------
- 000002FC			innerloop5 PROC
+ 0000044C			innerloop5 PROC
 
- 000002FC			L4:
+ 0000044C			L4:
 						
- 000002FC  8A 85 00000177 R			mov al, plainTextArray[SIZEOF keyarray5 + ebp]	
- 00000302  0F B6 B3				movzx esi,keyarray5[ebx]	
-	   000001DE R
- 00000309  53					push ebx
- 0000030A  50					push eax
- 0000030B  56					push esi
- 0000030C  B8 00000005				mov eax, SIZEOF keyarray5
- 00000311  0F B6 1D				movzx ebx, x
-	   0000024E R
- 00000318  F7 E3				mul ebx	
- 0000031A  5E					pop esi					;product is in edx
- 0000031B  03 C6				add eax, esi 
- 0000031D  8B D0				mov edx, eax
- 0000031F  B8 00000000				mov eax, 0					 
- 00000324  58					pop eax
- 00000325  88 82 000001E9 R			mov cipherTextArray[edx],al
- 0000032B  5B					pop ebx						;?????????
- 0000032C  43					inc ebx		
- 0000032D  45					inc ebp
+ 0000044C  8A 85 00000177 R			mov al, plainTextArray[SIZEOF keyarray5 + ebp]	
+ 00000452  0F B6 B3				movzx esi,keyarray5[ebx]	
+	   000001E7 R
+ 00000459  53					push ebx
+ 0000045A  50					push eax
+ 0000045B  56					push esi
+ 0000045C  B8 00000005				mov eax, SIZEOF keyarray5
+ 00000461  0F B6 1D				movzx ebx, x
+	   00000262 R
+ 00000468  F7 E3				mul ebx	
+ 0000046A  5E					pop esi					;product is in edx
+ 0000046B  03 C6				add eax, esi 
+ 0000046D  8B D0				mov edx, eax
+ 0000046F  B8 00000000				mov eax, 0					 
+ 00000474  58					pop eax
+ 00000475  88 82 000001FD R			mov cipherTextArray[edx],al
+ 0000047B  5B					pop ebx						;?????????
+ 0000047C  43					inc ebx		
+ 0000047D  45					inc ebp
 						
 						
- 0000032E  E2 CC				loop L4
+ 0000047E  E2 CC				loop L4
 
- 00000330  C3			ret
- 00000331			innerloop5 ENDP
+ 00000480  C3			ret
+ 00000481			innerloop5 ENDP
 
 
 				;---------------END DISPLAY PROCEDURE KeyArray Size = 6----------------------------
- 00000331			innerloop6 PROC
+ 00000481			innerloop6 PROC
 
- 00000331			L15:
+ 00000481			L15:
 						
- 00000331  8A 85 00000178 R			mov al, plainTextArray[SIZEOF keyarray6 + ebp]	
- 00000337  0F B6 B3				movzx esi,keyarray6[ebx]	
-	   000001E3 R
- 0000033E  53					push ebx
- 0000033F  50					push eax
- 00000340  56					push esi
- 00000341  B8 00000006				mov eax, SIZEOF keyarray6
- 00000346  0F B6 1D				movzx ebx, x
-	   0000024E R
- 0000034D  F7 E3				mul ebx	
- 0000034F  5E					pop esi					;product is in edx
- 00000350  03 C6				add eax, esi 
- 00000352  8B D0				mov edx, eax
- 00000354  B8 00000000				mov eax, 0					 
- 00000359  58					pop eax
- 0000035A  88 82 000001E9 R			mov cipherTextArray[edx],al
- 00000360  5B					pop ebx						;?????????
- 00000361  43					inc ebx		
- 00000362  45					inc ebp
+ 00000481  8A 85 00000178 R			mov al, plainTextArray[SIZEOF keyarray6 + ebp]	
+ 00000487  0F B6 B3				movzx esi,keyarray6[ebx]	
+	   000001EC R
+ 0000048E  53					push ebx
+ 0000048F  50					push eax
+ 00000490  56					push esi
+ 00000491  B8 00000006				mov eax, SIZEOF keyarray6
+ 00000496  0F B6 1D				movzx ebx, x
+	   00000262 R
+ 0000049D  F7 E3				mul ebx	
+ 0000049F  5E					pop esi					;product is in edx
+ 000004A0  03 C6				add eax, esi 
+ 000004A2  8B D0				mov edx, eax
+ 000004A4  B8 00000000				mov eax, 0					 
+ 000004A9  58					pop eax
+ 000004AA  88 82 000001FD R			mov cipherTextArray[edx],al
+ 000004B0  5B					pop ebx						;?????????
+ 000004B1  43					inc ebx		
+ 000004B2  45					inc ebp
 						
 						
- 00000363  E2 CC				loop L15
+ 000004B3  E2 CC				loop L15
 
- 00000365  C3			ret
- 00000366			innerloop6 ENDP
+ 000004B5  C3			ret
+ 000004B6			innerloop6 ENDP
 				;-----------------------------------------------
 
 
@@ -547,7 +646,7 @@ Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
 
 
 				END main
-Microsoft (R) Macro Assembler Version 14.00.24210.0	    11/30/17 14:09:50
+Microsoft (R) Macro Assembler Version 14.00.24210.0	    12/02/17 12:01:49
 )Add and Subtract,           (AddSub2.asm		     Symbols 2 - 1
 
 
@@ -641,8 +740,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000250 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000366 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000264 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000004B6 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -656,18 +755,22 @@ CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-DisplayKey . . . . . . . . . . .	P Near	 000001B1 _TEXT	Length= 0000003F Public STDCALL
-  L6 . . . . . . . . . . . . . .	L Near	 000001D6 _TEXT	
-Display  . . . . . . . . . . . .	P Near	 000002B0 _TEXT	Length= 0000004C Public STDCALL
+DisplayKey5  . . . . . . . . . .	P Near	 00000200 _TEXT	Length= 00000096 Public STDCALL
+  L17  . . . . . . . . . . . . .	L Near	 0000022F _TEXT	
+  L6 . . . . . . . . . . . . . .	L Near	 00000272 _TEXT	
+DisplayKey6  . . . . . . . . . .	P Near	 00000296 _TEXT	Length= 00000096 Public STDCALL
+  L18  . . . . . . . . . . . . .	L Near	 000002C5 _TEXT	
+  L16  . . . . . . . . . . . . .	L Near	 00000308 _TEXT	
+Display  . . . . . . . . . . . .	P Near	 000003EC _TEXT	Length= 00000060 Public STDCALL
 DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-First5 . . . . . . . . . . . . .	P Near	 00000186 _TEXT	Length= 0000002B Public STDCALL
-  L1 . . . . . . . . . . . . . .	L Near	 0000019A _TEXT	
-First6 . . . . . . . . . . . . .	P Near	 000000FA _TEXT	Length= 0000002B Public STDCALL
-  L13  . . . . . . . . . . . . .	L Near	 0000010E _TEXT	
+First5 . . . . . . . . . . . . .	P Near	 000001D5 _TEXT	Length= 0000002B Public STDCALL
+  L1 . . . . . . . . . . . . . .	L Near	 000001E9 _TEXT	
+First6 . . . . . . . . . . . . .	P Near	 00000149 _TEXT	Length= 0000002B Public STDCALL
+  L13  . . . . . . . . . . . . .	L Near	 0000015D _TEXT	
 FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FormatMessageA . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -696,20 +799,20 @@ HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-KeySize5 . . . . . . . . . . . .	P Near	 000001F0 _TEXT	Length= 00000060 Public STDCALL
-  L2 . . . . . . . . . . . . . .	L Near	 000001FA _TEXT	
-  Next . . . . . . . . . . . . .	L Near	 00000206 _TEXT	
-  L5 . . . . . . . . . . . . . .	L Near	 0000021F _TEXT	
-  OutOfRange . . . . . . . . . .	L Near	 0000022C _TEXT	
-  Repeats  . . . . . . . . . . .	L Near	 00000238 _TEXT	
-  Done . . . . . . . . . . . . .	L Near	 00000244 _TEXT	
-KeySize6 . . . . . . . . . . . .	P Near	 00000250 _TEXT	Length= 00000060 Public STDCALL
-  L11  . . . . . . . . . . . . .	L Near	 0000025A _TEXT	
-  Next . . . . . . . . . . . . .	L Near	 00000266 _TEXT	
-  L12  . . . . . . . . . . . . .	L Near	 0000027F _TEXT	
-  OutOfRange . . . . . . . . . .	L Near	 0000028C _TEXT	
-  Repeats  . . . . . . . . . . .	L Near	 00000298 _TEXT	
-  Done . . . . . . . . . . . . .	L Near	 000002A4 _TEXT	
+KeySize5 . . . . . . . . . . . .	P Near	 0000032C _TEXT	Length= 00000060 Public STDCALL
+  L2 . . . . . . . . . . . . . .	L Near	 00000336 _TEXT	
+  Next . . . . . . . . . . . . .	L Near	 00000342 _TEXT	
+  L5 . . . . . . . . . . . . . .	L Near	 0000035B _TEXT	
+  OutOfRange . . . . . . . . . .	L Near	 00000368 _TEXT	
+  Repeats  . . . . . . . . . . .	L Near	 00000374 _TEXT	
+  Done . . . . . . . . . . . . .	L Near	 00000380 _TEXT	
+KeySize6 . . . . . . . . . . . .	P Near	 0000038C _TEXT	Length= 00000060 Public STDCALL
+  L11  . . . . . . . . . . . . .	L Near	 00000396 _TEXT	
+  Next . . . . . . . . . . . . .	L Near	 000003A2 _TEXT	
+  L12  . . . . . . . . . . . . .	L Near	 000003BB _TEXT	
+  OutOfRange . . . . . . . . . .	L Near	 000003C8 _TEXT	
+  Repeats  . . . . . . . . . . .	L Near	 000003D4 _TEXT	
+  Done . . . . . . . . . . . . .	L Near	 000003E0 _TEXT	
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -733,12 +836,12 @@ ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 ReadKeyFlush . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadKey  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-Rest5  . . . . . . . . . . . . .	P Near	 00000125 _TEXT	Length= 00000061 Public STDCALL
-  lcipher  . . . . . . . . . . .	L Near	 0000015E _TEXT	
-  L3 . . . . . . . . . . . . . .	L Near	 0000016B _TEXT	
-Rest6  . . . . . . . . . . . . .	P Near	 00000099 _TEXT	Length= 00000061 Public STDCALL
-  lcipherl . . . . . . . . . . .	L Near	 000000D2 _TEXT	
-  L14  . . . . . . . . . . . . .	L Near	 000000DF _TEXT	
+Rest5  . . . . . . . . . . . . .	P Near	 00000174 _TEXT	Length= 00000061 Public STDCALL
+  lcipher  . . . . . . . . . . .	L Near	 000001AD _TEXT	
+  L3 . . . . . . . . . . . . . .	L Near	 000001BA _TEXT	
+Rest6  . . . . . . . . . . . . .	P Near	 000000E8 _TEXT	Length= 00000061 Public STDCALL
+  lcipherl . . . . . . . . . . .	L Near	 00000121 _TEXT	
+  L14  . . . . . . . . . . . . .	L Near	 0000012E _TEXT	
 SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -776,19 +879,19 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-innerloop5 . . . . . . . . . . .	P Near	 000002FC _TEXT	Length= 00000035 Public STDCALL
-  L4 . . . . . . . . . . . . . .	L Near	 000002FC _TEXT	
-innerloop6 . . . . . . . . . . .	P Near	 00000331 _TEXT	Length= 00000035 Public STDCALL
-  L15  . . . . . . . . . . . . .	L Near	 00000331 _TEXT	
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000099 Public STDCALL
+innerloop5 . . . . . . . . . . .	P Near	 0000044C _TEXT	Length= 00000035 Public STDCALL
+  L4 . . . . . . . . . . . . . .	L Near	 0000044C _TEXT	
+innerloop6 . . . . . . . . . . .	P Near	 00000481 _TEXT	Length= 00000035 Public STDCALL
+  L15  . . . . . . . . . . . . .	L Near	 00000481 _TEXT	
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 000000E8 Public STDCALL
   L10  . . . . . . . . . . . . .	L Near	 0000002B _TEXT	
   Redo . . . . . . . . . . . . .	L Near	 00000034 _TEXT	
   k5 . . . . . . . . . . . . . .	L Near	 0000005B _TEXT	
-  k6 . . . . . . . . . . . . . .	L Near	 00000062 _TEXT	
-  Lend . . . . . . . . . . . . .	L Near	 00000067 _TEXT	
-  m5 . . . . . . . . . . . . . .	L Near	 00000077 _TEXT	
-  m6 . . . . . . . . . . . . . .	L Near	 00000083 _TEXT	
-  mend . . . . . . . . . . . . .	L Near	 0000008D _TEXT	
+  k6 . . . . . . . . . . . . . .	L Near	 00000067 _TEXT	
+  Lend . . . . . . . . . . . . .	L Near	 00000071 _TEXT	
+  m5 . . . . . . . . . . . . . .	L Near	 0000007C _TEXT	
+  m6 . . . . . . . . . . . . . .	L Near	 000000AD _TEXT	
+  mend . . . . . . . . . . . . .	L Near	 000000DC _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -1011,15 +1114,18 @@ black  . . . . . . . . . . . . .	Number	 00000000h
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
 byteCount  . . . . . . . . . . .	DWord	 000001D7 _DATA	
-cipherTextArray  . . . . . . . .	Byte	 000001E9 _DATA	
-cipherTextString . . . . . . . .	Byte	 0000024F _DATA	
+cipherTextArray  . . . . . . . .	Byte	 000001FD _DATA	
+cipherTextString . . . . . . . .	Byte	 00000263 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
-keyarray5  . . . . . . . . . . .	Byte	 000001DE _DATA	
-keyarray6  . . . . . . . . . . .	Byte	 000001E3 _DATA	
-ksize  . . . . . . . . . . . . .	Byte	 000001DD _DATA	
+holder . . . . . . . . . . . . .	Byte	 000001E6 _DATA	
+keyarray5  . . . . . . . . . . .	Byte	 000001E7 _DATA	
+keyarray6  . . . . . . . . . . .	Byte	 000001EC _DATA	
+ksize  . . . . . . . . . . . . .	Byte	 000001E5 _DATA	
+lbrace . . . . . . . . . . . . .	Byte	 000001E1 _DATA	
+lbracket . . . . . . . . . . . .	Byte	 000001DD _DATA	
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
 lightGray  . . . . . . . . . . .	Number	 00000007h   
@@ -1028,21 +1134,26 @@ lightMagenta . . . . . . . . . .	Number	 0000000Dh
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
 plainTextArray . . . . . . . . .	Byte	 00000172 _DATA	
-prompt10 . . . . . . . . . . . .	Byte	 00000136 _DATA	
+posarray5  . . . . . . . . . . .	Byte	 000001F2 _DATA	
+posarray6  . . . . . . . . . . .	Byte	 000001F7 _DATA	
+prompt10 . . . . . . . . . . . .	Byte	 00000130 _DATA	
+prompt11 . . . . . . . . . . . .	Byte	 0000016C _DATA	
 prompt1  . . . . . . . . . . . .	Byte	 00000000 _DATA	
 prompt2  . . . . . . . . . . . .	Byte	 00000014 _DATA	
 prompt3  . . . . . . . . . . . .	Byte	 00000034 _DATA	
 prompt4  . . . . . . . . . . . .	Byte	 00000073 _DATA	
 prompt5  . . . . . . . . . . . .	Byte	 000000AF _DATA	
 prompt6  . . . . . . . . . . . .	Byte	 000000D1 _DATA	
-prompt7  . . . . . . . . . . . .	Byte	 000000DC _DATA	
-prompt8  . . . . . . . . . . . .	Byte	 000000E9 _DATA	
-prompt9  . . . . . . . . . . . .	Byte	 000000F7 _DATA	
+prompt7  . . . . . . . . . . . .	Byte	 000000D7 _DATA	
+prompt8  . . . . . . . . . . . .	Byte	 000000E4 _DATA	
+prompt9  . . . . . . . . . . . .	Byte	 000000F1 _DATA	
+rbrace . . . . . . . . . . . . .	Byte	 000001E3 _DATA	
+rbracket . . . . . . . . . . . .	Byte	 000001DF _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
 space  . . . . . . . . . . . . .	Byte	 000001DB _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
-x  . . . . . . . . . . . . . . .	Byte	 0000024E _DATA	
+x  . . . . . . . . . . . . . . .	Byte	 00000262 _DATA	
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
 	   0 Warnings
