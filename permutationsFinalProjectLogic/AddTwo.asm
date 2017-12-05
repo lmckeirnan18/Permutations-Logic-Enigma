@@ -18,12 +18,12 @@ prompt8 BYTE "CipherText: ",0
 prompt9 BYTE "Enter in a key number value (using numbers 0-5 scrambled up): ",0
 prompt10 BYTE "Values were outside the range of 0-5 inclusive. Try again: ",0
 prompt11 BYTE "Pos: ",0
+prompt12 BYTE "Letters and blanks spaces count as 0.",0
+prompt13 BYTE "Would you like to encrypt another message? 0 = 'no' and 1 = 'yes': ",0
+prompt14 BYTE "Goodbye. ",0
 
 
-;plainTextArray BYTE "h", "e", "l", "l", "o", " ", "w", "o", "r", "l", "d", " ", "f", "o", "u", "r",0
-;plainTextArray BYTE "hello world four",0
-
-plainTextArray BYTE 100 DUP(" "),0
+plainTextArray BYTE 120 DUP(" "),0
 byteCount DWORD ?
 
 space BYTE " ",0
@@ -50,6 +50,38 @@ cipherTextString BYTE ?				;new array
 
 ;********************MAIN PROC*************************
 main PROC
+
+Encrypt:
+
+mov eax, white
+call SetTextColor
+
+mov esi, 0
+mov ecx, 5
+clear5:
+	mov keyArray5[esi], '#'
+	inc esi
+
+loop clear5
+
+mov esi, 0
+mov ecx, 6
+clear6:
+	mov keyArray6[esi], '#'
+	inc esi
+
+loop clear6
+
+
+mov esi, 0
+mov ecx, 120
+cleartextarrays:
+	mov plaintextArray[esi], ' ' 
+	mov ciphertextArray[esi], ' '
+	inc esi
+loop cleartextarrays
+
+
 
 mov edx, OFFSET prompt1				;code for user inputing in plaintext 
 call WriteString
@@ -79,9 +111,16 @@ Redo:
 	cmp al, 6
 	ja Redo
 
+	call Crlf
+	mov edx, OFFSET prompt12
+	call WriteString
+	call crlf
+	call crlf
+
 	cmp ksize, 5
 	je k5
 	jmp k6
+
 k5:
 	call KeySize5				;gets user input for a key of size five and checks it for validity
 	call DisplayKey5			;displays the key that the user entered					
@@ -133,7 +172,33 @@ mov cipherTextArray[esi], bl				;moving "}" into the ciphertext array (need to a
 mend: 
 ;----------------------------------------------------------------------
 	
-	call Display									;use the display procedure to display the arrays
+call Display									;use the display procedure to display the arrays
+
+mov eax, white
+call SetTextColor
+
+Again:
+	mov edx, OFFSET prompt13
+	call WriteString
+	call Readint
+	call crlf
+	cmp eax, 1					;1 means "yes"
+	ja OutOfRange2				;is the value to big
+	je Encrypt
+	cmp eax, 0					;0 means "no"
+	jb OutOfRange2				;is the value to small
+	
+	mov edx, OFFSET prompt14
+	call WriteString
+	call Crlf
+	jmp pend
+
+	OutOfRange2:
+		mov edx, OFFSET prompt4
+		call WriteString
+		jmp Again
+
+	pend: 
 
 	exit
 main ENDP
@@ -353,11 +418,13 @@ KeySize5 PROC
 		mov edx, OFFSET prompt3
 		call WriteString
 		Next:
-			call ReadInt
+			call ReadInt			
 			cmp eax, 4
-			ja OutOfRange
+			ja OutOfRange				;is the value to big
 			cmp eax, 0
-			jb OutOfRange
+			jb OutOfRange				;is the value to small
+
+
 		;-------------------loop comparing values entered with ones in the array----------------------
 		mov ecx, 5
 		mov esi, 0
@@ -438,7 +505,8 @@ KeySize6 ENDP
 ;---------------Display procedure-------------------------
 Display PROC
 ;display arrays
-	mov eax, (cyan)
+	call crlf
+	mov eax, (lightcyan)
 	call SetTextColor
 	mov edx, OFFSET prompt7
 	call WriteString
@@ -447,7 +515,7 @@ Display PROC
 	mov edx, OFFSET plainTextArray
 	call Writestring
 	call Crlf
-	mov eax, (red)
+	mov eax, (lightmagenta)
 	call SetTextColor
 	mov edx, OFFSET prompt8
 	call WriteString
