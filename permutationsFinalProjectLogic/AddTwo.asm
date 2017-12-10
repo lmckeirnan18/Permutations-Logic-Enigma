@@ -504,7 +504,7 @@ Rest6 PROC
 	add esi,edi						
 
 
-	lcipherl:				;this is a jump
+	lcipherl:									;this is a jump
 		mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray6)/(SIZEOF keyarray6)
 
 		mov x, 1
