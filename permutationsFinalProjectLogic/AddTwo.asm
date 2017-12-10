@@ -1,6 +1,9 @@
-TITLE Add and Subtract,           (AddSub2.asm)
+TITLE Enigma,           (AddSub2.asm)
 ;Lily McKeirnan
-;permutation logic for final project Enigma Assembler
+;Aleisha Smith
+;Ahmed 
+;final project Enigma Assembler
+;DESCRIPTION: User inputs a plaintext message and picks a key size and then enters a key. The program will encrypt the input plaintext message using permutation logic. Then it will output the plaintext and ciphertext. 
 
 INCLUDE Irvine32.inc
 ;-----------------------------------------------------
@@ -23,7 +26,7 @@ prompt13 BYTE "Would you like to encrypt another message? 0 = 'no' and 1 = 'yes'
 prompt14 BYTE "Goodbye. ",0
 
 
-plainTextArray BYTE 120 DUP(" "),0
+plainTextArray BYTE 300 DUP(" "),0
 byteCount DWORD ?
 
 space BYTE " ",0
@@ -59,7 +62,7 @@ Encrypt:
 	mov esi, 0
 	mov ecx, 5
 	clear5:
-		mov keyArray5[esi], '#'			;clearing keyArray5
+		mov keyArray5[esi], '#'				;clearing keyArray5
 		inc esi
 
 	loop clear5
@@ -67,14 +70,14 @@ Encrypt:
 	mov esi, 0
 	mov ecx, 6
 	clear6:
-		mov keyArray6[esi], '#'			;clearing keyArray6
+		mov keyArray6[esi], '#'				;clearing keyArray6
 		inc esi
 
 	loop clear6
 
 
 	mov esi, 0
-	mov ecx, 120
+	mov ecx, 300
 	cleartextarrays:
 		mov plaintextArray[esi], ' '		;clearing the plaintextArray
 		mov ciphertextArray[esi], ' '		;clearing the ciphertextArray
@@ -83,23 +86,24 @@ Encrypt:
 
 	;----------Start encryption process---------------
 
-	mov edx, OFFSET prompt1				;prompting the user	;code for user inputing in plaintext 
+	mov edx, OFFSET prompt1					;prompting the user	;code for user inputing in plaintext 
 	call WriteString
 	mov edx, OFFSET plainTextArray
 	mov ecx, SIZEOF plainTextArray
-	call ReadString						;user input is stored in plainTextArray
-	mov byteCount, eax					;number of characters entered by user
+	call ReadString							;user input is stored in plainTextArray
+	mov byteCount, eax						;number of characters entered by user
 
-	mov esi, eax						;note: eax = number of characters entered
-	mov ecx, 2							;there are two dots after the last character entered which interupts the itteration 
-	mov bl, space						;we need them to be spaces
+	mov esi, eax							;note: eax = number of characters entered
+	mov ecx, 2								;there are two dots after the last character entered which interupts the itteration 
+	mov bl, space							;we need them to be spaces
 
 	L10:
-		mov plainTextArray[esi], bl				;taking care of the two dots in the plaintext array when reading in user input by putting in spaces
+		mov plainTextArray[esi], bl			;taking care of the two dots in the plaintext array when reading in user input by putting in spaces
 		inc esi
 
 	loop L10
-									
+	
+	call Crlf						
 	;--------------key size options---------------------
 	Redo:
 		mov edx, OFFSET prompt2				;output prompt asking for key size of 5 or 6
@@ -122,12 +126,12 @@ Encrypt:
 		jmp k6								;if size = 6 go to the k6 jump destination
 
 	k5:
-		call KeySize5				;PROCEDURE: gets user input for a key of size five and checks it for validity
-		call DisplayKey5			;PROCEDURE: displays the key that the user entered					
+		call KeySize5						;PROCEDURE: gets user input for a key of size five and checks it for validity
+		call DisplayKey5					;PROCEDURE: displays the key that the user entered					
 		jmp Lend								
 	k6:
-		call KeySize6				;PROCEDURE: gets user input for a key of size five and checks it for validity
-		call DisplayKey6			;PROCEDURE: displays the key that the user entered
+		call KeySize6						;PROCEDURE: gets user input for a key of size five and checks it for validity
+		call DisplayKey6					;PROCEDURE: displays the key that the user entered
 
 	Lend:
 		cmp ksize, 5
@@ -146,7 +150,7 @@ Encrypt:
 			mov bl, rbrace
 			mov plainTextArray[esi], bl					;moving "}" into the plaintext array (need to subtract the 2 spaces added)						
 			mov cipherTextArray[esi], bl				;moving "}" into the ciphertext array (need to add 1 )
-			jmp mend															;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!add jump when remander = 0!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			jmp mend															
 			
 		m6:
 			call First6									;PROCEDURE: mixing up the first 5 elements (keyarray5 size = 6)
@@ -173,19 +177,19 @@ Encrypt:
 				call WriteString
 				call Readint
 				call crlf
-				cmp eax, 1					;1 means "yes"
-				ja OutOfRange2				;is the value to big
-				je Encrypt					;to start over at the begining 
-				cmp eax, 0					;0 means "no"
-				jb OutOfRange2				;is the value to small
+				cmp eax, 1							;1 means "yes"
+				ja OutOfRange2						;is the value to big
+				je Encrypt							;to start over at the begining 
+				cmp eax, 0							;0 means "no"
+				jb OutOfRange2						;is the value to small
 	
-				mov edx, OFFSET prompt14
+				mov edx, OFFSET prompt14			;Goodbye to user
 				call WriteString
 				call Crlf
 				jmp pend
 
 				OutOfRange2:
-					mov edx, OFFSET prompt4
+					mov edx, OFFSET prompt4			;values outside range, try again
 					call WriteString
 					jmp Again
 
@@ -197,131 +201,61 @@ main ENDP
 
 ;********************************END MAIN*************************************************
 
-;-------------------Rest of the elements keysize = 6--------------
-Rest6 PROC
-	mov ecx, SIZEOF plainTextArray - SIZEOF keyarray6				;do this loop for the rest of the elements in plainTextArray (12-4=8)????? do we need this???
-	mov ebx, 0														;counter for moving along along in the array??
-	mov eax, 0
-	mov ebp, 0
-	mov edx, 0
+;-----------------------------KEYSIZE 5 checking procedure------------------
+KeySize5 PROC
+	mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
+	mov esi, 0
+	L2:
+		push esi
+		push ecx 
+		mov edx, OFFSET prompt3			;enter in key values 0-4
+		call WriteString
+		Next:
+			call ReadInt			
+			cmp eax, 4
+			ja OutOfRange				;is the value to big
+			cmp eax, 0
+			jb OutOfRange				;is the value to small
 
-	mov al, plainTextArray[SIZEOF keyarray6 + ebp]					;get the letter from the plaintext
-	movzx esi,keyarray6[ebx]											;get the position from the keyarray5
+		mov ecx, 5
+		mov esi, 0
+		L5:								;loop comparing values entered with ones in the array
+			cmp al, keyarray5[esi]
+			je Repeats
+			inc esi
+		loop L5
 
-	cmp esi, SIZEOF keyarray6										;deciding if we need to mod to be able to apply the key array position elements 
-	jb lcipherl						;
+		jmp Done
+		
+		OutOfRange:
+			mov edx, OFFSET prompt4		;values out of range, try again
+			call WriteString
+			jmp Next
 
-	mov edi, SIZEOF keyarray6
-	mov dx, 2
-	mul dx
-	add esi,edi				;????????????????????
+		Repeats:
+			mov edx, OFFSET prompt5		;value was repeated, try again
+			call WriteString
+			jmp Next
 
-
-	lcipherl:				;this is a jump
-		push ecx
-		mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray6)/(SIZEOF keyarray6)
-
-		mov x, 1
-		L14:
-			push ecx
-			mov ecx, SIZEOF keyarray6
-
-			Call innerloop6						;PROCEDURE: computing destination and filling ciphertext array 	
+		Done:
 			pop ecx
-			inc x
-			mov ebx, 0
-		loop L14
-
-		pop ecx
-ret
-Rest6 ENDP
-;------------------------------END of Rest6--------------------------------------
-
-;-------------Initial mix up of the plaintext for key of size 6 -------
-First6 PROC
-	mov ecx, SIZEOF keyarray6
-	mov esi, 0 
-	mov ebx, 0
-	mov eax, 0
-	L13:
-		mov al, plainTextArray[ebx]			;putting first element in al
-		movzx esi, keyarray6[ebx]			;putting position to move the element into esi
-		mov cipherTextArray[esi],al			;putting element into the new position
-		inc ebx
-	loop L13
+			pop esi
+			mov keyarray5[esi], al		;putting user input value into keyArray
+			inc esi
+	loop L2
 
 ret
-First6 ENDP
-
-
-;---------------END of first size 6 mix up---------------------
-
-;-------------------Rest of the elements keysize = 5--------------
-Rest5 PROC
-	mov ecx, SIZEOF plainTextArray - SIZEOF keyarray5				;do this loop for the rest of the elements in plainTextArray (12-4=8)????? do we need this???
-	mov ebx, 0														;counter for moving along along in the array??
-	mov eax, 0
-	mov ebp, 0
-	mov edx, 0
-
-	mov al, plainTextArray[SIZEOF keyarray5 + ebp]					;get the letter from the plaintext
-	movzx esi,keyarray5[ebx]											;get the position from the keyarray5
-
-	cmp esi, SIZEOF keyarray5										;deciding if we need to mod to be able to apply the key array position elements 
-	jb lcipher						;????????????????
-
-	mov edi, SIZEOF keyarray5
-	mov dx, 2
-	mul dx
-	add esi,edi				;????????????????????
-
-
-	lcipher:				;this is a jump
-		push ecx
-		mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray5)/(SIZEOF keyarray5)			;loop counter 
-
-		mov x, 1
-		L3:
-			push ecx
-			mov ecx, SIZEOF keyarray5
-
-			Call innerloop5						;PROCEDURE: computing destination and filling ciphertext array 
-	
-			pop ecx
-			inc x
-			mov ebx, 0
-		loop L3
-
-		pop ecx
-ret
-Rest5 ENDP
-;------------------------END of Rest5------------------------------------
-
-;-------------Initial mix up of the plaintext for key of size 5 -------
-First5 PROC
-	mov ecx, SIZEOF keyarray5
-	mov esi, 0 
-	mov ebx, 0
-	mov eax, 0
-	L1:
-		mov al, plainTextArray[ebx]			;putting first element in al
-		movzx esi, keyarray5[ebx]			;putting position to move the element into esi
-		mov cipherTextArray[esi],al			;putting element into the new position
-		inc ebx
-	loop L1
-
-ret
-First5 ENDP
-;---------------END of first size 5 mix up------------------
+KeySize5 ENDP
+;------------------------END KeySize5-----------------------------
 
 ;--------------DISPLAY KEY PROCEDURE key size = 5------------------------
 DisplayKey5 PROC
 	call Crlf
 	mov eax, yellow
 	call SetTextColor
-	mov edx, OFFSET prompt11
+	mov edx, OFFSET prompt11				;"Pos: "
 	call WriteString
-	mov edx, OFFSET Lbracket
+	mov edx, OFFSET Lbracket				;"["
 	call WriteString
 
 	movzx ecx, ksize
@@ -333,13 +267,13 @@ DisplayKey5 PROC
 		inc esi
 	loop L17
 
-	mov edx, OFFSET Rbracket
+	mov edx, OFFSET Rbracket				;"]"
 	call WriteString
 	call Crlf
 
-	mov edx, OFFSET prompt6
+	mov edx, OFFSET prompt6					;"Key: "
 	call WriteString
-	mov edx, OFFSET Lbracket
+	mov edx, OFFSET Lbracket				;"["
 	call WriteString
 
 	movzx ecx, ksize
@@ -351,7 +285,7 @@ DisplayKey5 PROC
 		inc esi
 	loop L6
 
-	mov edx, OFFSET Rbracket
+	mov edx, OFFSET Rbracket				;"]"
 	call WriteString
 	call Crlf
 
@@ -359,12 +293,59 @@ DisplayKey5 PROC
 DisplayKey5 ENDP
 ;--------------END of DisplayKey5----------------------------
 
+;--------------KEY6 checking procedure-----------------------
+KeySize6 PROC
+	mov ecx, 6							;code for user entering in key of size 6 (range 0-5)
+	mov esi, 0
+	L11:
+		push esi
+		push ecx 
+		mov edx, OFFSET prompt9			;enter in key values 0-5
+		call WriteString
+		Next:
+			call ReadInt
+			cmp eax, 5
+			ja OutOfRange				;greater than 5 (to big)
+			cmp eax, 0
+			jb OutOfRange				;less than 0 (to small)
+	
+		mov ecx, 6
+		mov esi, 0
+		L12:							;loop comparing values entered with ones in the array
+			cmp al, keyarray6[esi]
+			je Repeats					;is it a repeated value?
+			inc esi
+		loop L12
+
+		jmp Done
+
+		OutOfRange:
+			mov edx, OFFSET prompt10	;values out of range, try again
+			call WriteString
+			jmp Next
+
+		Repeats:
+			mov edx, OFFSET prompt5		;value was repeated, try again
+			call WriteString
+			jmp Next
+
+		Done:
+			pop ecx
+			pop esi
+			mov keyarray6[esi], al		;putting user input value into keyArray
+			inc esi
+	loop L11
+
+ret
+KeySize6 ENDP
+;---------------------END KeySize6---------------------
+
 ;--------------DISPLAY KEY PROCEDURE key size = 6------------------------
 DisplayKey6 PROC
 	call Crlf
 	mov eax, yellow
 	call SetTextColor
-	mov edx, OFFSET prompt11
+	mov edx, OFFSET prompt11				;"Pos: "
 	call WriteString
 	mov edx, OFFSET Lbracket				;"["
 	call WriteString
@@ -382,7 +363,7 @@ DisplayKey6 PROC
 	call WriteString						;"]"
 	call Crlf
 
-	mov edx, OFFSET prompt6
+	mov edx, OFFSET prompt6					;"Key: "
 	call WriteString
 	mov edx, OFFSET Lbracket				;"["
 	call WriteString
@@ -404,125 +385,60 @@ DisplayKey6 PROC
 DisplayKey6 ENDP
 ;--------------END of DisplayKey6----------------------------
 
-;-----------------------------KEYSIZE 5 checking procedure------------------
-KeySize5 PROC
-	mov ecx, 5							;code for user entering in key of size 5 (range 0-4)
-	mov esi, 0
-	L2:
-		push esi
-		push ecx 
-		mov edx, OFFSET prompt3
-		call WriteString
-		Next:
-			call ReadInt			
-			cmp eax, 4
-			ja OutOfRange				;is the value to big
-			cmp eax, 0
-			jb OutOfRange				;is the value to small
-
-		mov ecx, 5
-		mov esi, 0
-		L5:								;loop comparing values entered with ones in the array
-			cmp al, keyarray5[esi]
-			je Repeats
-			inc esi
-		loop L5
-
-		jmp Done
-		
-		OutOfRange:
-			mov edx, OFFSET prompt4
-			call WriteString
-			jmp Next
-
-		Repeats:
-			mov edx, OFFSET prompt5
-			call WriteString
-			jmp Next
-
-		Done:
-			pop ecx
-			pop esi
-			mov keyarray5[esi], al
-			inc esi
-	loop L2
+;-------------Initial mix up of the plaintext for key of size 5 -------
+First5 PROC
+	mov ecx, SIZEOF keyarray5
+	mov esi, 0 
+	mov ebx, 0
+	mov eax, 0
+	L1:
+		mov al, plainTextArray[ebx]			;putting first element in al
+		movzx esi, keyarray5[ebx]			;putting position to move the element into esi
+		mov cipherTextArray[esi],al			;putting element into the new position
+		inc ebx
+	loop L1
 
 ret
-KeySize5 ENDP
-;------------------------END KeySize5-----------------------------
+First5 ENDP
+;---------------END of first size 5 mix up------------------
 
-;--------------KEY6 checking procedure-----------------------
-KeySize6 PROC
-	mov ecx, 6							;code for user entering in key of size 5 (range 0-4)
-	mov esi, 0
-	L11:
-		push esi
-		push ecx 
-		mov edx, OFFSET prompt9
-		call WriteString
-		Next:
-			call ReadInt
-			cmp eax, 5
-			ja OutOfRange
-			cmp eax, 0
-			jb OutOfRange
+;-------------------Rest of the elements keysize = 5--------------
+Rest5 PROC
+	mov ebx, 0														;counter for moving along along in the keyArray
+	mov eax, 0
+	mov ebp, 0														;used for moving along plainTextArray
+	mov edx, 0														;used for multiplication
+
+	mov al, plainTextArray[SIZEOF keyarray5 + ebp]					;get the letter from the plaintext
+	movzx esi,keyarray5[ebx]										;get the position from the keyarray5
+
+	cmp esi, SIZEOF keyarray5										;deciding if we need to mod to be able to apply the key array position elements 
+	jb lcipher						
+
+	mov edi, SIZEOF keyarray5
+	mov dx, 2
+	mul dx
+	add esi,edi				
+
+
+	lcipher:																			;this is a jump
+		mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray5)/(SIZEOF keyarray5)			;loop counter 
+
+		mov x, 1
+		L3:
+			push ecx
+			mov ecx, SIZEOF keyarray5
+
+			Call innerloop5						;PROCEDURE: computing destination and filling ciphertext array 
 	
-		mov ecx, 6
-		mov esi, 0
-		L12:						;loop comparing values entered with ones in the array
-			cmp al, keyarray6[esi]
-			je Repeats
-			inc esi
-		loop L12
-
-		jmp Done
-
-		OutOfRange:
-			mov edx, OFFSET prompt10
-			call WriteString
-			jmp Next
-
-		Repeats:
-			mov edx, OFFSET prompt5
-			call WriteString
-			jmp Next
-
-		Done:
 			pop ecx
-			pop esi
-			mov keyarray6[esi], al
-			inc esi
-	loop L11
+			inc x
+			mov ebx, 0
+		loop L3
 
 ret
-KeySize6 ENDP
-;---------------------END KeySize6---------------------
-
-;---------------Display text arrays procedure-------------------------
-Display PROC						
-	call crlf
-	mov eax, (lightcyan)
-	call SetTextColor
-	mov edx, OFFSET prompt7
-	call WriteString
-	mov edx, OFFSET lbrace								;"{"
-	call WriteString
-	mov edx, OFFSET plainTextArray
-	call Writestring
-	call Crlf
-	mov eax, (lightmagenta)
-	call SetTextColor
-	mov edx, OFFSET prompt8
-	call WriteString
-	mov edx, OFFSET lbrace								;"{"
-	call WriteString
-	mov edx, OffSET cipherTextArray
-	call Writestring
-	call Crlf
-	call Crlf
-ret
-Display ENDP
-;-------------------------END DISPLAY PROCEDURE----------
+Rest5 ENDP
+;------------------------END of Rest5------------------------------------
 
 ;-----------------------Destination and filling Size = 5-----------------------------
 innerloop5 PROC
@@ -550,6 +466,62 @@ ret
 innerloop5 ENDP
 ;---------------END innerloop5----------------------------
 
+;-------------Initial mix up of the plaintext for key of size 6 -------
+First6 PROC
+	mov ecx, SIZEOF keyarray6
+	mov esi, 0 
+	mov ebx, 0
+	mov eax, 0
+	L13:
+		mov al, plainTextArray[ebx]			;putting first element in al
+		movzx esi, keyarray6[ebx]			;putting position to move the element into esi
+		mov cipherTextArray[esi],al			;putting element into the new position
+		inc ebx
+	loop L13
+
+ret
+First6 ENDP
+
+
+;---------------END of first size 6 mix up---------------------
+
+;-------------------Rest of the elements keysize = 6--------------
+Rest6 PROC
+	mov ebx, 0														;counter for moving along along in the array??
+	mov eax, 0
+	mov ebp, 0
+	mov edx, 0
+
+	mov al, plainTextArray[SIZEOF keyarray6 + ebp]					;get the letter from the plaintext
+	movzx esi,keyarray6[ebx]											;get the position from the keyarray5
+
+	cmp esi, SIZEOF keyarray6										;deciding if we need to mod to be able to apply the key array position elements 
+	jb lcipherl						
+
+	mov edi, SIZEOF keyarray6
+	mov dx, 2
+	mul dx
+	add esi,edi						
+
+
+	lcipherl:				;this is a jump
+		mov ecx, (SIZEOF plainTextArray - SIZEOF keyarray6)/(SIZEOF keyarray6)
+
+		mov x, 1
+		L14:
+			push ecx
+			mov ecx, SIZEOF keyarray6
+
+			Call innerloop6						;PROCEDURE: computing destination and filling ciphertext array 	
+			pop ecx
+			inc x
+			mov ebx, 0
+		loop L14
+
+ret
+Rest6 ENDP
+;------------------------------END of Rest6--------------------------------------
+
 ;-------------------Destination and filling Size = 6-----------------------
 innerloop6 PROC
 	L15:
@@ -575,6 +547,32 @@ innerloop6 PROC
 ret
 innerloop6 ENDP
 ;-----------------END innerloop6------------------------------
+
+;---------------Display text arrays procedure-------------------------
+Display PROC						
+	call crlf
+	mov eax, (lightcyan)
+	call SetTextColor
+	mov edx, OFFSET prompt7
+	call WriteString
+	mov edx, OFFSET lbrace								;"{"
+	call WriteString
+	mov edx, OFFSET plainTextArray
+	call Writestring
+	call Crlf
+	mov eax, (lightmagenta)
+	call SetTextColor
+	mov edx, OFFSET prompt8
+	call WriteString
+	mov edx, OFFSET lbrace								;"{"
+	call WriteString
+	mov edx, OffSET cipherTextArray
+	call Writestring
+	call Crlf
+	call Crlf
+ret
+Display ENDP
+;-------------------------END DISPLAY PROCEDURE----------
 
 
 
